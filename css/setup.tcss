@@ -1,0 +1,29 @@
+SetupScreen {
+    align: center middle;
+}
+
+.status-group {
+    width: 100%;
+    height: auto;
+    min-height: 3;
+    align: center middle;
+}
+
+.status-line {
+    width: 35%;
+}
+
+#main-vert {
+    width: 100;
+    height: auto;
+    padding: 2 4;
+    background: $panel;
+    border: round $primary;
+}
+
+#title {
+    text-align: center;
+    text-style: bold;
+    color: $text;
+    margin-bottom: 1;
+}

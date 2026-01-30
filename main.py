@@ -11,6 +11,7 @@ from textual.widgets import (
 from modules.configmgr import ConfigManager
 from modules.db import db
 from modules.generateDumps import generateDumps
+from screens.setup import SetupScreen
 
 
 class NixSearch(App):
@@ -19,8 +20,8 @@ class NixSearch(App):
         config_path = Path.home() / ".config" / "nix-search" / "config.yml"
         self.config = ConfigManager(config_path)
         self.db_path = self.config.get("general.db_path")
-        opts_db = db(self.db_path)
-        opts_db._init_db()
+        # opts_db = db(self.db_path)
+        # opts_db._init_db()
         self.cache_dir = Path(self.db_path).parent
 
     def on_mount(self):
@@ -28,7 +29,10 @@ class NixSearch(App):
             self.theme = self.config.get("general.theme")
         else:
             self.theme = "dracula"
-        self.gen_dumps()
+
+        if not Path(self.db_path).exists():
+            self.push_screen(SetupScreen(self.config))
+        # self.gen_dumps()
 
     @work(exclusive=True)
     async def gen_dumps(self):
