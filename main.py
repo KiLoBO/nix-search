@@ -1,28 +1,49 @@
+from pathlib import Path
+
+from textual import work
 from textual.app import App, ComposeResult
 from textual.widgets import (
     Footer,
     Header,
+    Static,
 )
 
-from pathlib import Path
 from modules.configmgr import ConfigManager
 from modules.db import db
+from modules.generateDumps import generateDumps
+
 
 class NixSearch(App):
     def __init__(self):
+        super().__init__()
         config_path = Path.home() / ".config" / "nix-search" / "config.yml"
         self.config = ConfigManager(config_path)
-        self.db_path = Path(self.config.get("general.db_path"))
-        db.init_db()
+        self.db_path = self.config.get("general.db_path")
+        opts_db = db(self.db_path)
+        opts_db._init_db()
+        self.cache_dir = Path(self.db_path).parent
 
     def on_mount(self):
         if self.config.get("general.theme"):
             self.theme = self.config.get("general.theme")
         else:
             self.theme = "dracula"
+        self.gen_dumps()
+
+    @work(exclusive=True)
+    async def gen_dumps(self):
+        self.notify("Dumping Nix Options")
+        genDumps = generateDumps()
+        await genDumps.genNixOptions(self.cache_dir)
+        self.notify("Finished dumping Nix Options")
+
+        self.notify("Dumping HM options")
+        await genDumps.genHmOptions(self.cache_dir)
+        self.notify("Finished dumping HM options")
 
     def compose(self) -> ComposeResult:
         yield Header()
+        yield Static(id="textDisplay")
         yield Footer()
 
 

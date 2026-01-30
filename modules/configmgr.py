@@ -1,16 +1,19 @@
-import yaml
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 DEFAULT_CONFIG = {
     "general": {
         "theme": "dracula",
-        "db_path": Path.home() / ".cache" / "nix-search" / "options.db"
+        "db_path": str(Path.home() / ".cache" / "nix-search" / "options.db"),
     }
 }
 
+
 class ConfigManager:
     def __init__(self, config_path: str | Path) -> None:
+        super().__init__()
         self.config_path = Path(config_path)
         self.config = self._load_config()
 

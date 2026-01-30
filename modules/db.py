@@ -3,8 +3,8 @@ from pathlib import Path
 
 from modules.configmgr import ConfigManager
 
-class db:
 
+class db:
     def __init__(self, DB_PATH: Path):
         super().__init__()
         self._conn = None
@@ -22,7 +22,7 @@ class db:
                 type,
                 default_value,
                 example,
-                source,     == 'nixos', 'home-manager', 'nix-darwin'
+                source,     -- 'nixos', 'home-manager', 'nix-darwin'
                 declarations,
                 tokenize='porter unicode61'
             );
