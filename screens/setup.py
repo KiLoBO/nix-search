@@ -21,6 +21,7 @@ Initial Setup
 
 sub_title = """
 Click a button to run the action. Red lines MUST be run.
+Database button will only be active if the other checks pass.
 """
 
 
@@ -58,6 +59,19 @@ class SetupScreen(Screen):
         self.populate_checks(self.results)
 
     def populate_checks(self, results):
+        db_button = self.query_one("#db-button", Button)
+        non_db_passed = all(
+            value[1] for key, value in results.items() if key not in ("passed", "db_exists")
+        )
+
+        if non_db_passed:
+            db_button.variant = "success"
+            db_button.disabled = False
+
+        else:
+            db_button.variant = "error"
+            db_button.disabled = True
+
         for key, value in results.items():
             if key == "passed":
                 continue

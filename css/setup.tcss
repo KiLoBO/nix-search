@@ -22,10 +22,11 @@ SetupScreen {
 }
 
 #title {
+    height: 2;
     text-align: center;
     text-style: bold underline;
     color: $text;
-    # margin-bottom: 1;
+    margin-bottom: 0;
 }
 
 #sub-title {
