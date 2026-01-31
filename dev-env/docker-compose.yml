@@ -1,0 +1,19 @@
+services:
+  nix-dev:
+    build: .
+    volumes:
+      - ..:/workspace
+      - container-venv:/workspace/.venv
+      - nix-store:/nix
+      - uv-cache:/root/.cache/uv
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    environment:
+      - TERM=xterm-256color
+      - UV_PYTHON_PREFERENCE=only-system
+
+volumes:
+  nix-store:
+  container-venv:
+  uv-cache:
