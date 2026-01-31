@@ -39,28 +39,20 @@ class SetupScreen(Screen):
                 yield Static(welcome_text, id="title")
                 yield Static(sub_title, id="sub-title")
                 with Horizontal(classes="status-group"):
-                    yield Static(
-                        "Database created: ", id="db_exists", classes="status-line"
-                    )
-                    yield Button(
-                        "Run Fix", id="db-button", classes="run-action", compact=True, variant="success"
-                    )
+                    yield Static("Database created: ", id="db_exists", classes="status-line")
+                    yield Button("Run Fix", id="db-button", classes="run-action", compact=True, variant="success")
+
                 with Horizontal(classes="status-group"):
-                    yield Static(
-                        "NixOS Options dumped: ",
-                        id="nixOpts_exists",
-                        classes="status-line",
-                    )
-                    yield Button(
-                        "Run Fix", id="nix-button", classes="run-action", compact=True, variant="success"
-                    )
+                    yield Static(id="nixOpts_exists",classes="status-line",)
+                    yield Button("Run Fix", id="nix-button", classes="run-action", compact=True, variant="success")
+
                 with Horizontal(classes="status-group"):
-                    yield Static(
-                        "HM Options dumped: ", id="hmOpts_exists", classes="status-line"
-                    )
-                    yield Button(
-                        "Run Fix", id="hm-button", classes="run-action", compact=True, variant="success"
-                    )
+                    yield Static(id="hmOpts_exists", classes="status-line")
+                    yield Button("Run Fix", id="hm-button", classes="run-action", compact=True, variant="success")
+
+                with Horizontal(classes="status-group"):
+                    yield Static(id="pkgs_exists", classes="status-line")
+                    yield Button("Run Fix", id="pkgs-button", classes="run-action", compact=True, variant="success")
 
     def on_mount(self) -> None:
         self.populate_checks(self.results)
@@ -81,7 +73,9 @@ class SetupScreen(Screen):
     @work
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         genDumps = generateDumps()
-        cache_dir = Path(self.config.get("general.db_path"))
+        cache_dir = Path(self.config.get("general.db_path")).parent
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        nixpkgs_version = self.config.get("general.nixpkgs_version")
         button_id = event.button.id
         button = self.query_one(f"#{button_id}", Button)
         button.loading = True
@@ -93,14 +87,18 @@ class SetupScreen(Screen):
 
             elif button_id == "nix-button":
                 self.notify("Dumping NixOS options...", severity="information")
-                await genDumps.genNixOptions(cache_dir.parent)
+                await genDumps.genNixOptions(cache_dir)
 
             elif button_id == "hm-button":
                 self.notify("Dumping HM options...", severity="information")
-                await genDumps.genHmOptions(cache_dir.parent)
+                await genDumps.genHmOptions(cache_dir)
+
+            elif button_id == "pkgs-button":
+                self.notify(f"Dumping Packages for {nixpkgs_version}...", severity="information")
+                await genDumps.genPackages(cache_dir, nixpkgs_version)
 
         except Exception as e:
-            self.notify(f"Error thrown. Will be printed to console. Error: {e}")
+            self.notify(f"Error thrown. Will be printed to console. Error: {e}", severity="error")
             print(f"Error with button process {button_id} -- Error: {e}")
 
         finally:

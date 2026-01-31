@@ -6,6 +6,7 @@ import yaml
 DEFAULT_CONFIG = {
     "general": {
         "theme": "dracula",
+        "nixpkgs_version": "25.11",
         "db_path": str(Path.home() / ".cache" / "nix-search" / "options.db"),
     }
 }

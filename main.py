@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from textual import work
 from textual.app import App, ComposeResult
 from textual.widgets import (
     Footer,
@@ -10,8 +9,7 @@ from textual.widgets import (
 
 from modules.configmgr import ConfigManager
 from modules.setupActions import SetupActions
-from modules.db import db
-from modules.generateDumps import generateDumps
+# from modules.db import db
 from screens.setup import SetupScreen
 
 
@@ -26,6 +24,11 @@ class NixSearch(App):
         # opts_db._init_db()
         self.cache_dir = Path(self.db_path).parent
 
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Static(id="textDisplay")
+        yield Footer()
+
     def on_mount(self):
         if self.config.get("general.theme"):
             self.theme = self.config.get("general.theme")
@@ -35,24 +38,6 @@ class NixSearch(App):
         results = self.checks.check_existing()
         if not results["passed"]:
             self.push_screen(SetupScreen(self.config, results))
-        # self.gen_dumps()
-
-    @work(exclusive=True)
-    async def gen_dumps(self):
-        self.notify("Dumping Nix Options")
-        genDumps = generateDumps()
-        await genDumps.genNixOptions(self.cache_dir)
-        self.notify("Finished dumping Nix Options")
-
-        self.notify("Dumping HM options")
-        await genDumps.genHmOptions(self.cache_dir)
-        self.notify("Finished dumping HM options")
-
-    def compose(self) -> ComposeResult:
-        yield Header()
-        yield Static(id="textDisplay")
-        yield Footer()
-
 
 if __name__ == "__main__":
     app = NixSearch()

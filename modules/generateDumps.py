@@ -1,6 +1,8 @@
 import asyncio
 import os
 import shutil
+import urllib.request
+import brotli
 from pathlib import Path
 
 
@@ -50,6 +52,7 @@ class generateDumps:
             print(
                 f"Error generating Home-Manager options. Exit code: {hm_opts.returncode}"
             )
+            return None
 
         try:
             src = (
@@ -69,5 +72,14 @@ class generateDumps:
         except Exception as e:
             print(f"Error copying dumped options: {e}")
 
-    async def genPackages(self, cache_dir):
-        print()
+    async def genPackages(self, cache_dir, nixpkgs_version):
+        url = f"https://channels.nixos.org/{nixpkgs_version}/packages.json.br"
+        dest = cache_dir / "packages.json"
+
+        with urllib.request.urlopen(url) as response:
+            compressed = response.read()
+
+        decompressed = brotli.decompress(compressed)
+
+        with open(dest, "wb") as f:
+            f.write(decompressed)
