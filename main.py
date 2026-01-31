@@ -9,6 +9,7 @@ from textual.widgets import (
 )
 
 from modules.configmgr import ConfigManager
+from modules.setupActions import SetupActions
 from modules.db import db
 from modules.generateDumps import generateDumps
 from screens.setup import SetupScreen
@@ -19,6 +20,7 @@ class NixSearch(App):
         super().__init__()
         config_path = Path.home() / ".config" / "nix-search" / "config.yml"
         self.config = ConfigManager(config_path)
+        self.checks = SetupActions(self.config)
         self.db_path = self.config.get("general.db_path")
         # opts_db = db(self.db_path)
         # opts_db._init_db()
@@ -30,8 +32,9 @@ class NixSearch(App):
         else:
             self.theme = "dracula"
 
-        if not Path(self.db_path).exists():
-            self.push_screen(SetupScreen(self.config))
+        results = self.checks.check_existing()
+        if not results["passed"]:
+            self.push_screen(SetupScreen(self.config, results))
         # self.gen_dumps()
 
     @work(exclusive=True)

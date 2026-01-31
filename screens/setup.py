@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from textual.app import ComposeResult
 from textual.containers import Center, Horizontal, Vertical
 from textual.screen import Screen
@@ -9,6 +7,7 @@ from textual.widgets import (
 )
 
 from modules.configmgr import ConfigManager
+from modules.setupActions import SetupActions
 
 welcome_text = """
     WELCOME, YOU NEED TO DO SETUP
@@ -18,9 +17,11 @@ welcome_text = """
 class SetupScreen(Screen):
     CSS_PATH = "../css/setup.tcss"
 
-    def __init__(self, config_manager: ConfigManager):
+    def __init__(self, config_manager: ConfigManager, results):
         super().__init__()
+        self.results: dict = results
         self.config = config_manager
+        self.checks = SetupActions(self.config)
 
     def compose(self) -> ComposeResult:
         with Center():
@@ -51,42 +52,10 @@ class SetupScreen(Screen):
                     )
 
     def on_mount(self) -> None:
-        self.check_existing_files()
+        for key, value in self.results.items():
+            if key == "passed":
+                continue
 
-    def check_existing_files(self):
-        db_path = Path(self.config.get("general.db_path"))
-        nixOpts = db_path.parent / "NixOS_options.json"
-        hmOpts = db_path.parent / "Home-Manager_options.json"
-
-        if db_path.exists():
-            color = "green"
-            self.query_one("#db_exists", Static).update(
-                f"[{color}]Database created: {db_path.exists()}[/]"
-            )
-        else:
-            color = "red"
-            self.query_one("#db_exists", Static).update(
-                f"[{color}]Database created: {db_path.exists()}[/]"
-            )
-
-        if nixOpts.exists():
-            color = "green"
-            self.query_one("#nixOpts_exists", Static).update(
-                f"[{color}]NixOS Options dumped: {nixOpts.exists()}[/]"
-            )
-        else:
-            color = "red"
-            self.query_one("#nixOpts_exists", Static).update(
-                f"[{color}]NixOS Options dumped: {nixOpts.exists()}[/]"
-            )
-
-        if hmOpts.exists():
-            color = "green"
-            self.query_one("#hmOpts_exists", Static).update(
-                f"[{color}]HM Options dumped: {hmOpts.exists()}[/]"
-            )
-        else:
-            color = "red"
-            self.query_one("#hmOpts_exists", Static).update(
-                f"[{color}]HM Options dumped: {hmOpts.exists()}[/]"
-            )
+            color = "green" if value[1] else "red"
+            text = self.query_one(f"#{key}", Static)
+            text.update(f"[{color}]{value[0]}: {value[1]}[/]")

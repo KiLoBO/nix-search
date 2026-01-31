@@ -10,7 +10,7 @@ SetupScreen {
 }
 
 .status-line {
-    width: 35%;
+    width: 39%;
 }
 
 #main-vert {
